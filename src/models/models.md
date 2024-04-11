@@ -1,0 +1,1 @@
+Nesta pasta temos todos os esquemas necessários para o express interagir no banco de dados.
