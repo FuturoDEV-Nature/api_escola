@@ -19,19 +19,35 @@ routes.get('/bem_vindo', (req, res) => {
     res.json({ name: 'Bem vindo' })
 })
 
-
 routes.post('/alunos', async (req, res) => {
-    const nome = req.body.nome
-    const data_nascimento = req.body.data_nascimento
-    const celular = req.body.celular
+    try {
+        const nome = req.body.nome
+        const data_nascimento = req.body.data_nascimento
+        const celular = req.body.celular
+    
+        if(!nome) {
+            return res.status(400).json({messagem: 'O nome é obrigatório'})
+        }
 
-    const aluno = await Aluno.create({
-        nome: nome,
-        data_nascimento: data_nascimento,
-        celular: celular
-    })
+        // momentJs
+        // date-fns
 
-    res.json(aluno)
+        if(!data_nascimento) {
+            return res.status(400).json({messagem: 'A data de nascimento é obrigatória'})
+        }
+
+        const aluno = await Aluno.create({
+            nome: nome,
+            data_nascimento: data_nascimento,
+            celular: celular
+        })
+
+        res.status(201).json(aluno)
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ error: 'Não possível cadastrar o aluno' })
+    }
 })
 
 routes.get('/alunos', async (req, res) => {
@@ -48,7 +64,7 @@ routes.post('/cursos', async (req, res) => {
         duracao_horas: duracao_horas
     })
 
-    res.json(curso)
+    res.status(201).json(curso)
 })
 
 routes.get('/cursos', async (req, res) => {
