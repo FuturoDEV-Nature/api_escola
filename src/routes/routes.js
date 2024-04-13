@@ -92,7 +92,7 @@ routes.get('/cursos', async (req, res) => {
     if(req.query.nome)  {
         params = {...params, nome: req.query.nome}
     }
-    
+
     const cursos = await Curso.findAll({
         where: params
     })
@@ -124,6 +124,21 @@ routes.delete('/cursos/:id', (req,res) => {
     res.status(204).json({})
 })
 
+
+routes.put('/cursos/:id', async (req, res) => {
+    const id = req.params.id
+
+    const curso = await Curso.findByPk(id)
+
+    if(!curso) {
+        return res.status(404).json({mensagem: 'Curso não encontraddo'})
+    }
+    curso.update(req.body)
+
+    await curso.save()
+
+    res.json(curso)
+})
 
 module.exports = routes
 
