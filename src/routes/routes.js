@@ -1,23 +1,14 @@
-const { Router } = require('express') // 
+const { Router, query } = require('express') // 
 const Aluno = require('../models/Aluno')
 const Curso = require('../models/Curso')
 
 const routes = new Router()
 
-// GET - Lista alguma coisa
-// POST - Criar/adicionar algo
-// PUT - Atualizar algo
-// DELETE - Deleta algo
-// PATCH - depois
-
-// criar uma rota
-// tipo
-// path
-// implementacao
-
 routes.get('/bem_vindo', (req, res) => {
     res.json({ name: 'Bem vindo' })
 })
+
+/* ----  Rotas dos Alunos ---- */
 
 routes.post('/alunos', async (req, res) => {
     try {
@@ -28,9 +19,6 @@ routes.post('/alunos', async (req, res) => {
         if (!nome) {
             return res.status(400).json({ messagem: 'O nome é obrigatório' })
         }
-
-        // momentJs
-        // date-fns
 
         if (!data_nascimento) {
             return res.status(400).json({ messagem: 'A data de nascimento é obrigatória' })
@@ -59,6 +47,28 @@ routes.get('/alunos', async (req, res) => {
     res.json(alunos)
 })
 
+routes.get('/alunos/:id', async (req, res) => {
+    try {
+
+        const { id } = req.params
+
+        const aluno = await Aluno.findByPk(id)
+
+        if(!aluno){
+            return res.status(404).json({ message: "Usuário não encontrado!"})
+        }
+
+        res.json(aluno)
+        
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ error: 'Não possível listar o aluno especifico',
+                              error: error})
+    }
+})
+
+/* ----  Rotas dos Cursos ---- */
+
 routes.post('/cursos', async (req, res) => {
     try {
         const nome = req.body.nome
@@ -86,31 +96,34 @@ routes.post('/cursos', async (req, res) => {
 
 })
 
+
 routes.get('/cursos', async (req, res) => {
-    let params = {}
+    try {
+        let params = {}
 
-    if(req.query.nome)  {
-        params = {...params, nome: req.query.nome}
+        // SE for passado uma paramero QUERY chamado "nome" na requisição, então
+           // esse parametro "nome" é adicionado dentro da variavel params
+        if(req.query.nome)  {
+            // o ...params, cria uma cópia do params com os chaves e valores já existentes
+            params = {...params, nome: req.query.nome}
+        }
+
+        if(req.query.duracao_horas)  {
+            // o ...params, cria uma cópia do params com os chaves e valores já existentes
+            params = {...params, duracao_horas: req.query.duracao_horas}
+        }
+    
+        const cursos = await Curso.findAll({
+            where: params
+        })
+    
+        res.json(cursos)
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ error: 'Não possível listar todos os cursos' })
     }
-
-    const cursos = await Curso.findAll({
-        where: params
-    })
-
-    res.json(cursos)
 })
 
-// BODY PARAMS POST/PUT
-// ROUTE PARAMS /1 PUT e DELETE , GET
-// QUERY PARAMS ?id=1 GET
-
-
-/*
-POST
-DELETE
-GET
-PUT
-*/
 
 routes.delete('/cursos/:id', (req,res) => {
     const {id} =  req.params
@@ -126,13 +139,14 @@ routes.delete('/cursos/:id', (req,res) => {
 
 
 routes.put('/cursos/:id', async (req, res) => {
-    const id = req.params.id
+    const { id } = req.params
 
     const curso = await Curso.findByPk(id)
 
     if(!curso) {
-        return res.status(404).json({mensagem: 'Curso não encontraddo'})
+        return res.status(404).json({mensagem: 'Curso não encontrado'})
     }
+
     curso.update(req.body)
 
     await curso.save()
@@ -141,4 +155,3 @@ routes.put('/cursos/:id', async (req, res) => {
 })
 
 module.exports = routes
-
