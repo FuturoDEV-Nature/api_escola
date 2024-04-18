@@ -8,10 +8,43 @@ routes.get('/bem_vindo', (req, res) => {
     res.json({ name: 'Bem vindo' })
 })
 
+/* ---- Login --- */
+
+routes.post('/login', async (req, res) => {
+    try {
+        const email = req.body.email
+        const password =req.body.password
+    
+        if(!email && !password) {
+            return res.status(400).json({ message: "Email ou senha, não informados!"})
+        }
+
+        // Procura na tabela Aluno, um aluno que corresponda com o email e senha fornecido!
+        const aluno = await Aluno.findOne({
+            where: {email:email, password:password}
+        })
+
+        if(!aluno){
+            return res.status(404).json({ message: "Não existe alunos com email e senha informado!"})
+        }
+
+        res.status(200).json({authorization: "JWT ainda vai ser implementado!"})
+
+        
+    } catch (error) {
+        return res.status(500).json({ error: error, message: "Algo inesperado aconteceu!"})
+    }
+
+})
+
+
 /* ----  Rotas dos Alunos ---- */
 
+// Rota de criação de aluno | Registro
 routes.post('/alunos', async (req, res) => {
     try {
+        const email = req.body.email
+        const password = req.body.password
         const nome = req.body.nome
         const data_nascimento = req.body.data_nascimento
         const celular = req.body.celular
@@ -29,6 +62,8 @@ routes.post('/alunos', async (req, res) => {
         }
 
         const aluno = await Aluno.create({
+            email: email,
+            password: password,
             nome: nome,
             data_nascimento: data_nascimento,
             celular: celular
