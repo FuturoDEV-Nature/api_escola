@@ -2,45 +2,51 @@ const { Router, query } = require('express') //
 const Aluno = require('../models/Aluno')
 const Curso = require('../models/Curso')
 
+const { auth } = require('../middleware/auth')
+const { sign } = require('jsonwebtoken')
+
 const routes = new Router()
 
 routes.get('/bem_vindo', (req, res) => {
     res.json({ name: 'Bem vindo' })
 })
 
-/* ---- Login --- */
+/* ----  Rotas de Login ---- */
 
 routes.post('/login', async (req, res) => {
     try {
         const email = req.body.email
-        const password =req.body.password
-    
-        if(!email && !password) {
-            return res.status(400).json({ message: "Email ou senha, não informados!"})
+        const password = req.body.password
+
+        if (!email) {
+            return res.status(400).json({ message: 'O email é obrigatório' })
         }
 
-        // Procura na tabela Aluno, um aluno que corresponda com o email e senha fornecido!
+        if (!password) {
+            return res.status(400).json({ message: 'O password é obrigatório' })
+        }
+
         const aluno = await Aluno.findOne({
             where: {email:email, password:password}
         })
 
         if(!aluno){
-            return res.status(404).json({ message: "Não existe alunos com email e senha informado!"})
+            return res.status(404).json({ error: 'Nenhum aluno corresponde a email e senha fornecidos!' })
         }
 
-        res.status(200).json({authorization: "JWT ainda vai ser implementado!"})
+        const payload = {sub: aluno.id, email: aluno.email, nome: aluno.nome}
 
-        
+        const token = sign(payload, process.env.SECRET_JWT)        
+
+        res.status(200).json({Token: token})
+
     } catch (error) {
-        return res.status(500).json({ error: error, message: "Algo inesperado aconteceu!"})
+        return res.status(500).json({ error: error, message: 'Algo deu errado!' })
     }
-
 })
-
 
 /* ----  Rotas dos Alunos ---- */
 
-// Rota de criação de aluno | Registro
 routes.post('/alunos', async (req, res) => {
     try {
         const email = req.body.email
@@ -50,15 +56,15 @@ routes.post('/alunos', async (req, res) => {
         const celular = req.body.celular
 
         if (!nome) {
-            return res.status(400).json({ messagem: 'O nome é obrigatório' })
+            return res.status(400).json({ message: 'O nome é obrigatório' })
         }
 
         if (!data_nascimento) {
-            return res.status(400).json({ messagem: 'A data de nascimento é obrigatória' })
+            return res.status(400).json({ message: 'A data de nascimento é obrigatória' })
         }
 
-        if(!data_nascimento.match(/\d{4}-\d{2}-\d{2}/gm)) {
-            return res.status(400).json({ messagem: 'A data de nascimento é não está no formato correto' }) 
+        if (!data_nascimento.match(/\d{4}-\d{2}-\d{2}/gm)) {
+            return res.status(400).json({ message: 'A data de nascimento é não está no formato correto' })
         }
 
         const aluno = await Aluno.create({
@@ -77,28 +83,30 @@ routes.post('/alunos', async (req, res) => {
     }
 })
 
-routes.get('/alunos', async (req, res) => {
+routes.get('/alunos', auth, async (req, res) => {
     const alunos = await Aluno.findAll()
     res.json(alunos)
 })
 
-routes.get('/alunos/:id', async (req, res) => {
+routes.get('/alunos/:id', auth, async (req, res) => {
     try {
 
         const { id } = req.params
 
         const aluno = await Aluno.findByPk(id)
 
-        if(!aluno){
-            return res.status(404).json({ message: "Usuário não encontrado!"})
+        if (!aluno) {
+            return res.status(404).json({ message: "Usuário não encontrado!" })
         }
 
         res.json(aluno)
-        
+
     } catch (error) {
         console.log(error.message)
-        res.status(500).json({ error: 'Não possível listar o aluno especifico',
-                              error: error})
+        res.status(500).json({
+            error: 'Não possível listar o aluno especifico',
+            error: error
+        })
     }
 })
 
@@ -109,12 +117,13 @@ routes.post('/cursos', async (req, res) => {
         const nome = req.body.nome
         const duracao_horas = req.body.duracao_horas
 
-        if(!nome) {
-            return res.status(400).json({messagem: "O nome é obrigatório" })
+        if (!nome) {
+            return res.status(400).json({ message: "O nome é obrigatório" })
         }
 
-        if(!(duracao_horas >= 40 && duracao_horas <= 200)) {
-            return res.status(400).json({  messagem: "A duração do curso deve ser entre 40 e 200 horas"
+        if (!(duracao_horas >= 40 && duracao_horas <= 200)) {
+            return res.status(400).json({
+                message: "A duração do curso deve ser entre 40 e 200 horas"
             })
         }
 
@@ -137,21 +146,21 @@ routes.get('/cursos', async (req, res) => {
         let params = {}
 
         // SE for passado uma paramero QUERY chamado "nome" na requisição, então
-           // esse parametro "nome" é adicionado dentro da variavel params
-        if(req.query.nome)  {
+        // esse parametro "nome" é adicionado dentro da variavel params
+        if (req.query.nome) {
             // o ...params, cria uma cópia do params com os chaves e valores já existentes
-            params = {...params, nome: req.query.nome}
+            params = { ...params, nome: req.query.nome }
         }
 
-        if(req.query.duracao_horas)  {
+        if (req.query.duracao_horas) {
             // o ...params, cria uma cópia do params com os chaves e valores já existentes
-            params = {...params, duracao_horas: req.query.duracao_horas}
+            params = { ...params, duracao_horas: req.query.duracao_horas }
         }
-    
+
         const cursos = await Curso.findAll({
             where: params
         })
-    
+
         res.json(cursos)
     } catch (error) {
         console.log(error.message)
@@ -160,15 +169,15 @@ routes.get('/cursos', async (req, res) => {
 })
 
 
-routes.delete('/cursos/:id', (req,res) => {
-    const {id} =  req.params
+routes.delete('/cursos/:id', (req, res) => {
+    const { id } = req.params
 
     Curso.destroy({
         where: {
             id: id
         }
     }) // DELETE cursos from cursos where id = 1
-  
+
     res.status(204).json({})
 })
 
@@ -178,8 +187,8 @@ routes.put('/cursos/:id', async (req, res) => {
 
     const curso = await Curso.findByPk(id)
 
-    if(!curso) {
-        return res.status(404).json({mensagem: 'Curso não encontrado'})
+    if (!curso) {
+        return res.status(404).json({ message: 'Curso não encontrado' })
     }
 
     curso.update(req.body)

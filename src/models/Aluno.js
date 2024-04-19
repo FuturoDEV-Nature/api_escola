@@ -2,13 +2,11 @@ const { DataTypes } = require('sequelize')
 const { connection } = require('../database/connection')
 
 const Aluno = connection.define('alunos', {
-    email: {
+    email:{
         type: DataTypes.STRING,
-        allowNull: false
     },
-    password: {
+    password:{
         type: DataTypes.STRING,
-        allowNull: false
     },
     nome: {
         type: DataTypes.STRING,
@@ -18,6 +16,9 @@ const Aluno = connection.define('alunos', {
     },
     celular: {
         type: DataTypes.STRING,
+    },
+    cargo: {
+        type: DataTypes.ENUM(['Aluno','Professor'])
     }
 })
 

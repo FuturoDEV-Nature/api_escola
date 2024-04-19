@@ -13,7 +13,7 @@
 ## Trabalhando com migrations:
 
 ### Criar uma migration
-1. `sequelize migration:generate --name criar_tabela_alunos`
+1. `sequelize migration:generate --name alter_table_adicionar_login_alunos`
 2. `npx sequelize-cli migration:generate --name criar_tabela_alunos`
 ### Rodar uma migration. Opções:
 1. Opção nº 1: `sequelize db:migrate`
@@ -36,3 +36,5 @@ https://sequelize.org/docs/v6/core-concepts/model-basics/
 `npm install -g sequelize-cli` 
 ### instalar o dotenv
 `npm install dotenv`
+### instalar o JsonWebToken ( JWT )
+`npm install jsonwebtoken`
