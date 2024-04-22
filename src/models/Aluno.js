@@ -16,9 +16,6 @@ const Aluno = connection.define('alunos', {
     },
     celular: {
         type: DataTypes.STRING,
-    },
-    cargo: {
-        type: DataTypes.ENUM(['Aluno','Professor'])
     }
 })
 
