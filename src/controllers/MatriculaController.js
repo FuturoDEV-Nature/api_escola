@@ -11,7 +11,7 @@ class MatriculaController {
             const curso_id = req.body.curso_id // id do curso
             const aluno_id = req.body.aluno_id // id do aluno
 
-            if (!curso_id || !aluno_id) {
+            if (!curso_id && !aluno_id) {
                 return res
                     .status(400)
                     .json({ mensagem: 'O ID do aluno e do curso são obrigatórios' })
