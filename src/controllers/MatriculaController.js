@@ -13,7 +13,7 @@ class MatriculaController {
 
             if (!curso_id || !aluno_id) {
                 return res
-                    .status(400)
+                    .status(409)
                     .json({ mensagem: 'O ID do aluno e do curso são obrigatórios' })
             }
 
