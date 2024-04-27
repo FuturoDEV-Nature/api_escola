@@ -27,8 +27,9 @@ class LoginController {
              
             const hashSenha = await compare(password, aluno.password)
 
-            if(hashSenha === false) {
-                return res.status(403).json({mensagem: 'Aluno  não encontrado'})
+            if(hashSenha === false ) {
+
+                return res.status(400).json({mensagem: 'Aluno  não encontrado'})
             }
 
             const payload = { sub: aluno.id, email: aluno.email, nome: aluno.nome }
